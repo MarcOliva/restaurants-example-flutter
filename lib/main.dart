@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_eb/helpers/http_helper.dart';
-import 'package:flutter_app_eb/models/restaurant.dart';
-import 'package:flutter_app_eb/ui/add_review.dart';
 import 'package:flutter_app_eb/ui/all_reviews.dart';
 import 'package:flutter_app_eb/ui/home.dart';
 
@@ -31,8 +28,6 @@ class MyStatefulWidget extends StatefulWidget {
 /// This is the private State class that goes with MyStatefulWidget.
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   int _selectedIndex = 0;
-  static const TextStyle optionStyle =
-      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   static const List<Widget> _widgetOptions = <Widget>[
     HomeWidget(),
     AllReviews()
@@ -54,11 +49,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            title: const Text('Home'),
+            label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.rate_review),
-            title: const Text('Reviews'),
+            label: 'Reviews',
           ),
         ],
         currentIndex: _selectedIndex,
@@ -67,5 +62,4 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       ),
     );
   }
-
 }

@@ -60,16 +60,16 @@ class Restaurant {
   String review;
   Restaurant(
       {String apikey,
-        String id,
-        String name,
-        Location location,
-        String thumb,this.review}) {
+      String id,
+      String name,
+      Location location,
+      String thumb,
+      this.review}) {
     this._apikey = apikey;
     this._id = id;
     this._name = name;
     this._location = location;
     this._thumb = thumb;
-
   }
 
   String get apikey => _apikey;
@@ -103,20 +103,13 @@ class Restaurant {
       data['location'] = this._location.toJson();
     }
     data['thumb'] = this._thumb;
-    data['review']= this.review;
+    data['review'] = this.review;
     return data;
   }
 
-
   Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'review': review,
-      'city':location.city
-    };
+    return {'id': id, 'name': name, 'review': review, 'city': location.city};
   }
-
 }
 
 class Location {

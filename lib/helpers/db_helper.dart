@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter_app_eb/models/restaurant.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+
 class DbHelper {
   final int version = 1;
   Database db;
@@ -19,9 +20,9 @@ class DbHelper {
     if (db == null) {
       db = await openDatabase(join(await getDatabasesPath(), 'reviews.db'),
           onCreate: (db, version) {
-            db.execute(
-                'CREATE TABLE review(id TEXT PRIMARY KEY, name TEXT, review TEXT , city TEXT)');
-          }, version: version);
+        db.execute(
+            'CREATE TABLE review(id TEXT PRIMARY KEY, name TEXT, review TEXT , city TEXT)');
+      }, version: version);
     }
     return db;
   }
@@ -32,21 +33,25 @@ class DbHelper {
         conflictAlgorithm: ConflictAlgorithm.replace);
     return id;
   }
+
+  Future<int> updateReview(String restaurantId, String review) async {
+    int id = await db.update('review', {'review': review},
+        where: 'id = ?', whereArgs: [restaurantId]);
+    return id;
+  }
+
   Future<int> deleteReview(Restaurant restaurant) async {
     print("ENTRA");
     print(restaurant);
     int result =
-    await db.delete('review', where: 'id = ?', whereArgs: [restaurant.id]);
+        await db.delete('review', where: 'id = ?', whereArgs: [restaurant.id]);
     return result;
   }
 
-  Future<dynamic>getAllReviews () async {
-    List<Map<String,dynamic>> reviews= await db.rawQuery('SELECT * FROM review');
+  Future<dynamic> getAllReviews() async {
+    List<Map<String, dynamic>> reviews =
+        await db.rawQuery('SELECT * FROM review');
 
     return reviews;
-
   }
-
-
-
 }

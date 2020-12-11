@@ -101,7 +101,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                   context,
                   MaterialPageRoute(
                       builder: (BuildContext context) =>
-                          AddReview(restaurants[i].restaurant)),
+                          AddReview(restaurants[i].restaurant, "save")),
                 );
               },
             ),

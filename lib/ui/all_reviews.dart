@@ -2,93 +2,117 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_eb/helpers/db_helper.dart';
 import 'package:flutter_app_eb/models/restaurant.dart';
 import 'package:flutter_app_eb/ui/add_review.dart';
+
 class AllReviews extends StatefulWidget {
   const AllReviews();
   @override
   _AllReviewsState createState() => _AllReviewsState();
 }
 
-class _AllReviewsState extends State<AllReviews> {
+class _AllReviewsState extends State<AllReviews> with WidgetsBindingObserver {
   DbHelper dbHelper;
-  Future<List> getAllReviews () async {
+  List<Restaurant> restaurants;
+  Future<List> getAllReviews() async {
     await dbHelper.openDb();
-    var reviews = await dbHelper.getAllReviews().then((value){
-      return value;
+    dbHelper.getAllReviews().then((value) {
+      List<Restaurant> tempRests = List();
+      for (var i = 0; i < value.length; i++) {
+        var restaurant = Restaurant.fromJson(value[i]);
+        tempRests.add(restaurant);
+      }
+      print(tempRests);
+
+      setState(() {
+        restaurants = tempRests;
+      });
     });
-    print(reviews);
-    return reviews;
   }
 
+  Future deleteResturant(Restaurant restaurant) async {
+    var result = await dbHelper.deleteReview(restaurant);
+    if (result == 1) {
+      getAllReviews();
+    } else {}
+  }
 
   @override
   void initState() {
-
+    WidgetsBinding.instance.addObserver(this);
     dbHelper = DbHelper();
+    restaurants = List();
+    if (mounted) {
+      getAllReviews();
+    }
     super.initState();
   }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      getAllReviews();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Mis Reviews"),
+        appBar: AppBar(
+          title: Text("Mis Reviews"),
+        ),
+        body: _bodyStatus());
+  }
 
-      ),
-      body: FutureBuilder(
-        future: getAllReviews(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: SizedBox(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
-          if (snapshot.hasData) {
-            return ListView.builder(
-              itemCount: snapshot.data == null ? 0 : snapshot.data.length -1,
-              itemBuilder: (BuildContext context, i) {
-                return Card(
-                  color: Colors.white,
-                  elevation: 2.0,
-                  child: ListTile(
-
-                    title: Text(snapshot.data[i]["name"]),
-                    subtitle: Text(snapshot.data[i]["review"]),
-
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children:<Widget> [
-                        IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () {
-                            dbHelper.deleteReview(snapshot.data[i]);
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.edit),
-                          onPressed: () {
-                            var restaurant = Restaurant.fromJson(snapshot.data[i]);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      AddReview(restaurant)),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+  Widget _bodyStatus() {
+    if (restaurants.isEmpty) {
+      return Center(
+        child: const Text("No hay reviews registradas"),
+      );
+    } else {
+      return ListView.builder(
+        itemCount: restaurants.length,
+        itemBuilder: (BuildContext context, i) {
+          return Card(
+            color: Colors.white,
+            elevation: 2.0,
+            child: ListTile(
+              title: Text(restaurants[i].name),
+              subtitle: Text(restaurants[i].review),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () {
+                      deleteResturant(restaurants[i]);
+                    },
                   ),
-                );
-              },
-            );
-          } else {
-            return Center(
-              child: const Text("No existen datos"),
-            );
-          }
+                  IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                AddReview(restaurants[i], "update")),
+                      );
+                      if (result == "updated") {
+                        getAllReviews();
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
         },
-      ),
-    );
+      );
+    }
   }
 }
